@@ -3,6 +3,7 @@ package com.github.alym62.springterraform.service.impl;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.github.alym62.springterraform.domain.User;
@@ -17,7 +18,8 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
-    private UserRepository repository;
+    private final UserRepository repository;
+    private final PasswordEncoder encoder;
 
     @Override
     public Optional<UserResponseDTO> findByEmail(String email) {
@@ -31,10 +33,11 @@ public class UserServiceImpl implements UserService {
         if (userExists.isPresent())
             throw new BusinessException("Ops! Dont possible save user.");
 
+        var password = encoder.encode(dto.password());
         var userSaved = repository.save(User.builder()
                 .email(dto.email())
                 .name(dto.name())
-                .password(dto.password())
+                .password(password)
                 .build());
 
         return userSaved.getId();
