@@ -13,11 +13,11 @@ import com.github.alym62.springterraform.payload.UserResponseDTO;
 import com.github.alym62.springterraform.service.UserService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserController {
     private final UserService service;
 
