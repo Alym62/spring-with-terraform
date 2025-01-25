@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -15,10 +16,13 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import com.github.alym62.springterraform.payload.UserIdResponseDTO;
 import com.github.alym62.springterraform.payload.UserRequestDTO;
 import com.github.alym62.springterraform.payload.UserResponseDTO;
+import com.github.alym62.springterraform.payload.UserUpdateRequestDTO;
 import com.github.alym62.springterraform.service.UserService;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -98,8 +102,47 @@ class UserControllerTest {
     void itShouldCallServiceAndDeleteById() {
         var uuid = UUID.randomUUID();
 
+        doNothing().when(this.userService).deleteById(uuid);
+
         this.userController.delete(uuid);
 
         verify(this.userService, times(1)).deleteById(uuid);
+    }
+
+    @Test
+    @DisplayName("Test [Update by id] - User controller")
+    void itShouldCallServiceAndUpdateById() {
+        var uuid = UUID.randomUUID();
+        var request = new UserUpdateRequestDTO("Aly meireles", "123");
+
+        doNothing().when(this.userService).updateById(uuid, request);
+
+        this.userController.update(uuid, request);
+
+        verify(this.userService, times(1)).updateById(uuid, request);
+    }
+
+    @Test
+    @DisplayName("Test [Pager] - User controller")
+    void itShouldCallServiceAndPager() {
+        var pageable = PageRequest.of(0, 10);
+        var userResponse = UserResponseDTO.builder()
+                .id(UUID.randomUUID())
+                .name("Aly")
+                .email("aly@email.com")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now()).build();
+        var page = new PageImpl<>(List.of(userResponse), pageable, 1);
+
+        when(this.userService.getPager(pageable)).thenReturn(page);
+
+        var response = this.userController.pager(0, 10);
+        var body = response.getBody();
+
+        assertNotNull(body);
+        assertEquals(1, body.getContent().size());
+        assertEquals(userResponse.name(), body.getContent().get(0).name());
+
+        verify(this.userService, times(1)).getPager(PageRequest.of(0, 10));
     }
 }

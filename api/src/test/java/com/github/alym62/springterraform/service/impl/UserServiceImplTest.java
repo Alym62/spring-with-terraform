@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,11 +18,14 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.github.alym62.springterraform.domain.User;
 import com.github.alym62.springterraform.exceptions.BusinessException;
 import com.github.alym62.springterraform.payload.UserRequestDTO;
+import com.github.alym62.springterraform.payload.UserUpdateRequestDTO;
 import com.github.alym62.springterraform.repository.UserRepository;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -141,5 +145,62 @@ public class UserServiceImplTest {
         this.serviceImpl.deleteById(uuid);
 
         verify(this.repository, times(1)).deleteById(uuid);
+    }
+
+    @Test
+    @DisplayName("Test [Update by id] - User service")
+    void itShouldUpdateById() {
+        var password = "newPassword";
+        var dto = new UserUpdateRequestDTO("Aly meireles", password);
+        var uuid = UUID.randomUUID();
+
+        var user = User.builder()
+                .id(uuid)
+                .name("Aly")
+                .email("aly@email.com")
+                .password("123")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now()).build();
+
+        when(this.repository.findById(uuid)).thenReturn(Optional.of(user));
+        when(this.encoder.encode(password)).thenReturn("encodedUpdatePassword");
+        when(this.repository.save(any(User.class))).thenAnswer(invoke -> {
+            return invoke.getArgument(0, User.class);
+        });
+
+        this.serviceImpl.updateById(uuid, dto);
+
+        verify(this.repository, times(1)).findById(uuid);
+        verify(this.encoder, times(1)).encode(password);
+
+        var captor = ArgumentCaptor.forClass(User.class);
+        verify(this.repository, times(1)).save(captor.capture());
+
+        var userUpdated = captor.getValue();
+        assertEquals(userUpdated.getPassword(), "encodedUpdatePassword");
+        assertEquals(userUpdated.getName(), dto.name());
+    }
+
+    @Test
+    @DisplayName("Test [Pager] - User service")
+    void itShouldPager() {
+        var pageable = PageRequest.of(0, 10);
+        var userResponse = User.builder()
+                .id(UUID.randomUUID())
+                .name("Aly")
+                .email("aly@email.com")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now()).build();
+        var page = new PageImpl<>(List.of(userResponse), pageable, 1);
+
+        when(this.repository.findAll(pageable)).thenReturn(page);
+
+        var response = this.serviceImpl.getPager(pageable);
+
+        assertNotNull(response);
+        assertEquals(1, response.getContent().size());
+        assertEquals(userResponse.getName(), response.getContent().get(0).name());
+
+        verify(this.repository, times(1)).findAll(pageable);
     }
 }

@@ -3,6 +3,8 @@ package com.github.alym62.springterraform.service.impl;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +13,7 @@ import com.github.alym62.springterraform.exceptions.BusinessException;
 import com.github.alym62.springterraform.payload.UserIdResponseDTO;
 import com.github.alym62.springterraform.payload.UserRequestDTO;
 import com.github.alym62.springterraform.payload.UserResponseDTO;
+import com.github.alym62.springterraform.payload.UserUpdateRequestDTO;
 import com.github.alym62.springterraform.repository.UserRepository;
 import com.github.alym62.springterraform.service.UserService;
 
@@ -22,6 +25,13 @@ import lombok.AllArgsConstructor;
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private final PasswordEncoder encoder;
+
+    @Override
+    public Page<UserResponseDTO> getPager(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(user -> new UserResponseDTO(user.getId(), user.getName(), user.getEmail(), user.getCreatedAt(),
+                        user.getUpdatedAt()));
+    }
 
     @Override
     public Optional<UserIdResponseDTO> getByEmail(String email) {
@@ -58,5 +68,17 @@ public class UserServiceImpl implements UserService {
     public void deleteById(UUID id) {
         var user = getUserById(id);
         repository.deleteById(user.id());
+    }
+
+    @Override
+    @Transactional
+    public void updateById(UUID id, UserUpdateRequestDTO dto) {
+        var user = repository.findById(id)
+                .orElseThrow(() -> new BusinessException("Ops! User not found"));
+
+        user.setName(dto.name());
+        user.setPassword(encoder.encode(dto.password()));
+
+        repository.save(user);
     }
 }
