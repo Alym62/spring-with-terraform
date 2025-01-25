@@ -83,6 +83,7 @@ class UserControllerTest {
         var response = this.userController.getById(uuid);
         var body = response.getBody();
 
+        assertNotNull(body);
         assertEquals(body.id(), dto.id());
         assertEquals(body.name(), dto.name());
         assertEquals(body.email(), dto.email());
