@@ -123,4 +123,23 @@ public class UserServiceImplTest {
 
         verify(this.repository, times(1)).findById(uuid);
     }
+
+    @Test
+    @DisplayName("Test [Delete by id] - User service")
+    void itShouldDeleteById() {
+        var uuid = UUID.randomUUID();
+        var user = User.builder()
+                .id(uuid)
+                .name("Aly")
+                .email("aly@email.com")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now()).build();
+
+        when(this.repository.findById(uuid)).thenReturn(Optional.of(user));
+        doNothing().when(this.repository).deleteById(uuid);
+
+        this.serviceImpl.deleteById(uuid);
+
+        verify(this.repository, times(1)).deleteById(uuid);
+    }
 }

@@ -13,4 +13,6 @@ public interface UserService {
     UserIdResponseDTO createUser(UserRequestDTO dto);
 
     UserResponseDTO getUserById(UUID id);
+
+    void deleteById(UUID id);
 }

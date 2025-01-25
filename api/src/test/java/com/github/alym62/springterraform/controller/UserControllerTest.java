@@ -92,4 +92,14 @@ class UserControllerTest {
 
         verify(this.userService, times(1)).getUserById(uuid);
     }
+
+    @Test
+    @DisplayName("Test [Delete by id] - User controller")
+    void itShouldCallServiceAndDeleteById() {
+        var uuid = UUID.randomUUID();
+
+        this.userController.delete(uuid);
+
+        verify(this.userService, times(1)).deleteById(uuid);
+    }
 }

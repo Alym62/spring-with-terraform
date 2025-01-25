@@ -14,6 +14,7 @@ import com.github.alym62.springterraform.payload.UserResponseDTO;
 import com.github.alym62.springterraform.repository.UserRepository;
 import com.github.alym62.springterraform.service.UserService;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -29,6 +30,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserIdResponseDTO createUser(UserRequestDTO dto) {
         var userExists = getByEmail(dto.email());
         if (userExists.isPresent())
@@ -50,5 +52,11 @@ public class UserServiceImpl implements UserService {
                 .map(user -> new UserResponseDTO(user.getId(), user.getName(), user.getEmail(), user.getCreatedAt(),
                         user.getUpdatedAt()))
                 .orElseThrow(() -> new BusinessException("Ops! User not found"));
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        var user = getUserById(id);
+        repository.deleteById(user.id());
     }
 }
