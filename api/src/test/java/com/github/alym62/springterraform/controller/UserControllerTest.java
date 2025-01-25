@@ -3,6 +3,7 @@ package com.github.alym62.springterraform.controller;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -15,7 +16,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.github.alym62.springterraform.payload.UserIdResponseDTO;
 import com.github.alym62.springterraform.payload.UserRequestDTO;
+import com.github.alym62.springterraform.payload.UserResponseDTO;
 import com.github.alym62.springterraform.service.UserService;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -41,7 +44,7 @@ class UserControllerTest {
     void itShouldCallServiceAndReturnCreateUserID() {
         var request = new UserRequestDTO("Eu", "eu@email.com", "123");
 
-        when(userService.createUser(request)).thenReturn(UUID.randomUUID());
+        when(userService.createUser(request)).thenReturn(new UserIdResponseDTO(UUID.randomUUID()));
 
         var response = userController.create(request);
         var body = response.getBody();
@@ -66,5 +69,26 @@ class UserControllerTest {
 
         assertNotNull(body);
         assertEquals(body, "Success");
+    }
+
+    @Test
+    @DisplayName("Test [Get by id] - User controller")
+    void itShouldCallServiceAndGetById() {
+        var uuid = UUID.randomUUID();
+        var dto = new UserResponseDTO(uuid, "Aly", "aly@email.com",
+                LocalDateTime.now(), LocalDateTime.now());
+
+        when(this.userService.getUserById(uuid)).thenReturn(dto);
+
+        var response = this.userController.getById(uuid);
+        var body = response.getBody();
+
+        assertEquals(body.id(), dto.id());
+        assertEquals(body.name(), dto.name());
+        assertEquals(body.email(), dto.email());
+        assertEquals(body.createdAt(), dto.createdAt());
+        assertEquals(body.updatedAt(), dto.updatedAt());
+
+        verify(this.userService, times(1)).getUserById(uuid);
     }
 }

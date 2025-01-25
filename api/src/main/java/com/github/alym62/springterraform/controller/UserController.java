@@ -1,13 +1,17 @@
 package com.github.alym62.springterraform.controller;
 
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.github.alym62.springterraform.payload.UserIdResponseDTO;
 import com.github.alym62.springterraform.payload.UserRequestDTO;
 import com.github.alym62.springterraform.payload.UserResponseDTO;
 import com.github.alym62.springterraform.service.UserService;
@@ -27,9 +31,13 @@ public class UserController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<UserResponseDTO> create(@RequestBody @Valid UserRequestDTO dto) {
-        var uuid = service.createUser(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new UserResponseDTO(uuid));
+    public ResponseEntity<UserIdResponseDTO> create(@RequestBody @Valid UserRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.createUser(dto));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok().body(service.getUserById(id));
     }
 
 }

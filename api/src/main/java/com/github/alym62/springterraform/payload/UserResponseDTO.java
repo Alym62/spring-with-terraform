@@ -1,9 +1,15 @@
 package com.github.alym62.springterraform.payload;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 
+@Builder
 public record UserResponseDTO(
-        @Schema(description = "User - ID") UUID id) {
+                UUID id,
+                String name,
+                String email,
+                LocalDateTime createdAt,
+                LocalDateTime updatedAt) {
 }

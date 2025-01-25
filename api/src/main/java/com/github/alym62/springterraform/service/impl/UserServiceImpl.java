@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.github.alym62.springterraform.domain.User;
 import com.github.alym62.springterraform.exceptions.BusinessException;
+import com.github.alym62.springterraform.payload.UserIdResponseDTO;
 import com.github.alym62.springterraform.payload.UserRequestDTO;
 import com.github.alym62.springterraform.payload.UserResponseDTO;
 import com.github.alym62.springterraform.repository.UserRepository;
@@ -22,14 +23,14 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder encoder;
 
     @Override
-    public Optional<UserResponseDTO> findByEmail(String email) {
+    public Optional<UserIdResponseDTO> getByEmail(String email) {
         return repository.findByEmail(email)
-                .map(user -> new UserResponseDTO(user.getId()));
+                .map(user -> new UserIdResponseDTO(user.getId()));
     }
 
     @Override
-    public UUID createUser(UserRequestDTO dto) {
-        var userExists = findByEmail(dto.email());
+    public UserIdResponseDTO createUser(UserRequestDTO dto) {
+        var userExists = getByEmail(dto.email());
         if (userExists.isPresent())
             throw new BusinessException("Ops! Dont possible save user.");
 
@@ -40,7 +41,14 @@ public class UserServiceImpl implements UserService {
                 .password(password)
                 .build());
 
-        return userSaved.getId();
+        return new UserIdResponseDTO(userSaved.getId());
     }
 
+    @Override
+    public UserResponseDTO getUserById(UUID id) {
+        return repository.findById(id)
+                .map(user -> new UserResponseDTO(user.getId(), user.getName(), user.getEmail(), user.getCreatedAt(),
+                        user.getUpdatedAt()))
+                .orElseThrow(() -> new BusinessException("Ops! User not found"));
+    }
 }

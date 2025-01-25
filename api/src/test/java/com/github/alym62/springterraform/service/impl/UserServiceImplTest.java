@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.github.alym62.springterraform.domain.User;
+import com.github.alym62.springterraform.exceptions.BusinessException;
 import com.github.alym62.springterraform.payload.UserRequestDTO;
 import com.github.alym62.springterraform.repository.UserRepository;
 
@@ -70,12 +72,55 @@ public class UserServiceImplTest {
         var createdUser = captor.getValue();
 
         assertEquals(createdUser.getPassword(), passwordEncoded);
-        assertEquals(createdUser.getId(), userId);
+        assertEquals(createdUser.getId(), userId.id());
     }
 
     @Test
     @DisplayName("Test [Find by email] - User service")
     void itShouldFindByEmailIfExists() {
+        var dto = new UserRequestDTO("Aly", "aly@email.com", "123");
 
+        when(this.repository.findByEmail(dto.email())).thenReturn(Optional.of(User.builder().build()));
+
+        assertThrows(BusinessException.class, () -> this.serviceImpl.createUser(dto));
+        verify(this.encoder, times(0)).encode(any());
+        verify(this.repository, times(1)).findByEmail(dto.email());
+        verify(this.repository, times(0)).save(any());
+    }
+
+    @Test
+    @DisplayName("Test [Find by id] - User service")
+    void itShouldFindById() {
+        var uuid = UUID.randomUUID();
+        var user = User.builder()
+                .id(uuid)
+                .name("Aly")
+                .email("aly@email.com")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now()).build();
+
+        when(this.repository.findById(uuid)).thenReturn(Optional.of(user));
+
+        var userResponseDTO = this.serviceImpl.getUserById(uuid);
+
+        assertEquals(userResponseDTO.id(), user.getId());
+        assertEquals(userResponseDTO.name(), user.getName());
+        assertEquals(userResponseDTO.email(), user.getEmail());
+        assertEquals(userResponseDTO.createdAt(), user.getCreatedAt());
+        assertEquals(userResponseDTO.updatedAt(), user.getUpdatedAt());
+
+        verify(this.repository, times(1)).findById(uuid);
+    }
+
+    @Test
+    @DisplayName("Test [Find by id not found] - User service")
+    void itShouldFindByIdNotExists() {
+        var uuid = UUID.randomUUID();
+
+        when(this.repository.findById(uuid)).thenReturn(Optional.empty());
+
+        assertThrows(BusinessException.class, () -> this.serviceImpl.getUserById(uuid));
+
+        verify(this.repository, times(1)).findById(uuid);
     }
 }
