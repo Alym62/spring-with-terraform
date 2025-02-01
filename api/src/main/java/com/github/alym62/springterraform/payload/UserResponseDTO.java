@@ -7,9 +7,9 @@ import lombok.Builder;
 
 @Builder
 public record UserResponseDTO(
-                UUID id,
-                String name,
-                String email,
-                LocalDateTime createdAt,
-                LocalDateTime updatedAt) {
+        UUID id,
+        String name,
+        String email,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt) {
 }
