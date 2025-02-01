@@ -65,4 +65,10 @@ public class UserController {
         service.updateById(id, dto);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<Object> getUserLogged() {
+        return ResponseEntity.ok().body("Logged success");
+    }
+
 }
