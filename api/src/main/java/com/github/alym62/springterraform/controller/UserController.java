@@ -67,8 +67,8 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<Object> getUserLogged() {
-        return ResponseEntity.ok().body("Logged success");
+    public ResponseEntity<UserResponseDTO> getUserLogged() {
+        return ResponseEntity.ok().body(service.userLogged());
     }
 
 }

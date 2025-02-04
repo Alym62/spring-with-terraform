@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -80,5 +81,13 @@ public class UserServiceImpl implements UserService {
         user.setPassword(encoder.encode(dto.password()));
 
         repository.save(user);
+    }
+
+    @Override
+    public UserResponseDTO userLogged() {
+        var ctx = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var response = (UserResponseDTO) ctx;
+        return new UserResponseDTO(response.id(), response.name(), response.email(), response.createdAt(),
+                response.updatedAt());
     }
 }

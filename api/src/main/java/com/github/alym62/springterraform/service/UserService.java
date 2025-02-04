@@ -23,4 +23,6 @@ public interface UserService {
     void deleteById(UUID id);
 
     void updateById(UUID id, UserUpdateRequestDTO dto);
+
+    UserResponseDTO userLogged();
 }
