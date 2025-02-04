@@ -1,7 +1,5 @@
 package com.github.alym62.springterraform.service.impl;
 
-import static io.jsonwebtoken.SignatureAlgorithm.*;
-
 import java.util.Date;
 
 import javax.crypto.SecretKey;
@@ -38,7 +36,7 @@ public class JwtServiceImpl implements JwtService {
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(HS256, secret)
+                .signWith(getSecretKey())
                 .compact();
     }
 
